@@ -1,0 +1,812 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "import os.path\n",
+    "import pyspark_csv as pycsv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "sc.addPyFile('pyspark_csv.py')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "fileName = os.path.join('data', 'airOT_2015_06.csv')\n",
+    "rawRDD = sc.textFile(fileName)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[u'\"YEAR\",\"MONTH\",\"DAY_OF_MONTH\",\"DAY_OF_WEEK\",\"FL_DATE\",\"CARRIER\",\"ORIGIN\",\"ORIGIN_CITY_NAME\",\"ORIGIN_STATE_ABR\",\"DEST\",\"DEST_CITY_NAME\",\"DEST_STATE_ABR\",\"DEP_TIME\",\"DEP_DELAY\",\"ARR_TIME\",\"ARR_DELAY\",\"CANCELLED\",\"CANCELLATION_CODE\",\"DIVERTED\",\"ACTUAL_ELAPSED_TIME\",\"CARRIER_DELAY\",\"WEATHER_DELAY\",\"NAS_DELAY\",\"SECURITY_DELAY\",\"LATE_AIRCRAFT_DELAY\",']"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rawRDD.take(1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "parsedRDD = rawRDD.map(lambda line: line[:-1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[u'\"YEAR\",\"MONTH\",\"DAY_OF_MONTH\",\"DAY_OF_WEEK\",\"FL_DATE\",\"CARRIER\",\"ORIGIN\",\"ORIGIN_CITY_NAME\",\"ORIGIN_STATE_ABR\",\"DEST\",\"DEST_CITY_NAME\",\"DEST_STATE_ABR\",\"DEP_TIME\",\"DEP_DELAY\",\"ARR_TIME\",\"ARR_DELAY\",\"CANCELLED\",\"CANCELLATION_CODE\",\"DIVERTED\",\"ACTUAL_ELAPSED_TIME\",\"CARRIER_DELAY\",\"WEATHER_DELAY\",\"NAS_DELAY\",\"SECURITY_DELAY\",\"LATE_AIRCRAFT_DELAY\"']"
+      ]
+     },
+     "execution_count": 68,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "parsedRDD.take(1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "DataFrame[YEAR: int, MONTH: int, DAY_OF_MONTH: int, DAY_OF_WEEK: int, FL_DATE: string, CARRIER: string, ORIGIN: string, ORIGIN_CITY_NAME: string, ORIGIN_STATE_ABR: string, DEST: string, DEST_CITY_NAME: string, DEST_STATE_ABR: string, DEP_TIME: int, DEP_DELAY: int, ARR_TIME: int, ARR_DELAY: int, CANCELLED: int, CANCELLATION_CODE: string, DIVERTED: int, ACTUAL_ELAPSED_TIME: int, CARRIER_DELAY: int, WEATHER_DELAY: int, NAS_DELAY: int, SECURITY_DELAY: int, LATE_AIRCRAFT_DELAY: int]"
+      ]
+     },
+     "execution_count": 69,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "parsedDF = pycsv.csvToDataFrame(sqlContext, parsedRDD, parseDate=False)\n",
+    "parsedDF.cache()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "root\n",
+      " |-- YEAR: integer (nullable = true)\n",
+      " |-- MONTH: integer (nullable = true)\n",
+      " |-- DAY_OF_MONTH: integer (nullable = true)\n",
+      " |-- DAY_OF_WEEK: integer (nullable = true)\n",
+      " |-- FL_DATE: string (nullable = true)\n",
+      " |-- CARRIER: string (nullable = true)\n",
+      " |-- ORIGIN: string (nullable = true)\n",
+      " |-- ORIGIN_CITY_NAME: string (nullable = true)\n",
+      " |-- ORIGIN_STATE_ABR: string (nullable = true)\n",
+      " |-- DEST: string (nullable = true)\n",
+      " |-- DEST_CITY_NAME: string (nullable = true)\n",
+      " |-- DEST_STATE_ABR: string (nullable = true)\n",
+      " |-- DEP_TIME: integer (nullable = true)\n",
+      " |-- DEP_DELAY: integer (nullable = true)\n",
+      " |-- ARR_TIME: integer (nullable = true)\n",
+      " |-- ARR_DELAY: integer (nullable = true)\n",
+      " |-- CANCELLED: integer (nullable = true)\n",
+      " |-- CANCELLATION_CODE: string (nullable = true)\n",
+      " |-- DIVERTED: integer (nullable = true)\n",
+      " |-- ACTUAL_ELAPSED_TIME: integer (nullable = true)\n",
+      " |-- CARRIER_DELAY: integer (nullable = true)\n",
+      " |-- WEATHER_DELAY: integer (nullable = true)\n",
+      " |-- NAS_DELAY: integer (nullable = true)\n",
+      " |-- SECURITY_DELAY: integer (nullable = true)\n",
+      " |-- LATE_AIRCRAFT_DELAY: integer (nullable = true)\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "parsedDF.printSchema()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 71,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of observations: 503897\n"
+     ]
+    }
+   ],
+   "source": [
+    "print \"Number of observations: %s\" % parsedDF.count()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 72,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+-------+-----------------+\n",
+      "|summary|        ARR_DELAY|\n",
+      "+-------+-----------------+\n",
+      "|  count|           492847|\n",
+      "|   mean|9.601590351569554|\n",
+      "| stddev|45.00234820578506|\n",
+      "|    min|              -66|\n",
+      "|    max|             1508|\n",
+      "+-------+-----------------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "parsedDF.describe(\"ARR_DELAY\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 73,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+---------+\n",
+      "|ARR_DELAY|\n",
+      "+---------+\n",
+      "|      -18|\n",
+      "|       57|\n",
+      "|      118|\n",
+      "|       -9|\n",
+      "|       -8|\n",
+      "|        1|\n",
+      "|      -16|\n",
+      "|      183|\n",
+      "|      134|\n",
+      "|       -3|\n",
+      "|      -13|\n",
+      "|       38|\n",
+      "|       37|\n",
+      "|     null|\n",
+      "|      119|\n",
+      "|       80|\n",
+      "|       23|\n",
+      "|      134|\n",
+      "|      139|\n",
+      "|      107|\n",
+      "+---------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "parsedDF.select(\"ARR_DELAY\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 74,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "11158"
+      ]
+     },
+     "execution_count": 74,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "parsedDF.filter(parsedDF[\"ARR_DELAY\"] == 0).count()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 75,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+---------+\n",
+      "|ARR_DELAY|\n",
+      "+---------+\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "|     null|\n",
+      "+---------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "parsedDF.filter(parsedDF[\"CANCELLED\"] == 1).select(\"ARR_DELAY\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 76,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of observations remaining: 492847\n"
+     ]
+    }
+   ],
+   "source": [
+    "filteredDF = parsedDF.dropna(subset = \"ARR_DELAY\")\n",
+    "print \"Number of observations remaining: %s\" % filteredDF.count()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 77,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "DataFrame[YEAR: int, MONTH: int, DAY_OF_MONTH: int, DAY_OF_WEEK: int, FL_DATE: string, CARRIER: string, ORIGIN: string, ORIGIN_CITY_NAME: string, ORIGIN_STATE_ABR: string, DEST: string, DEST_CITY_NAME: string, DEST_STATE_ABR: string, DEP_TIME: int, DEP_DELAY: int, ARR_TIME: int, ARR_DELAY: int, CANCELLED: int, CANCELLATION_CODE: string, DIVERTED: int, ACTUAL_ELAPSED_TIME: int, CARRIER_DELAY: int, WEATHER_DELAY: int, NAS_DELAY: int, SECURITY_DELAY: int, LATE_AIRCRAFT_DELAY: int]"
+      ]
+     },
+     "execution_count": 77,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "weights = [.6, .2, .2]\n",
+    "seed = 24\n",
+    "trainingDF, validationDF, testDF = filteredDF.randomSplit(weights, seed)\n",
+    "trainingDF.cache()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of training points: 296008\n"
+     ]
+    }
+   ],
+   "source": [
+    "numTrainingPoints = trainingDF.count()\n",
+    "print \"Number of training points: %s\" % numTrainingPoints"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+-----------+----------------+------------------+\n",
+      "|DAY_OF_WEEK|AVG(DAY_OF_WEEK)|    AVG(ARR_DELAY)|\n",
+      "+-----------+----------------+------------------+\n",
+      "|          1|             1.0|11.885900373899409|\n",
+      "|          2|             2.0|11.769462105156927|\n",
+      "|          3|             3.0| 9.494188645507377|\n",
+      "|          4|             4.0|10.176172122749671|\n",
+      "|          5|             5.0| 9.274771064489558|\n",
+      "|          6|             6.0| 6.066739261254549|\n",
+      "|          7|             7.0| 7.243037523547681|\n",
+      "+-----------+----------------+------------------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "trainingDF.select(\"DAY_OF_WEEK\", \"ARR_DELAY\").groupBy(\"DAY_OF_WEEK\").avg().show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 102,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "import pyspark.mllib\n",
+    "from pyspark.sql.functions import *\n",
+    "from pyspark.sql import functions as F\n",
+    "from pyspark.ml.feature import OneHotEncoder, StringIndexer, VectorAssembler"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 138,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "extendedDF  = (trainingDF\n",
+    "               .withColumn(\"DAY_OF_WEEK_DOUBLE\", trainingDF.DAY_OF_WEEK * 1.)\n",
+    "               .withColumn(\"LATE_FLIGHT\", F.when(trainingDF.ARR_DELAY > 10, True).otherwise(False))\n",
+    "               .withColumn(\"DEP_HOUR\", floor((trainingDF.DEP_TIME)/100))\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+------------------+-----------+-----------+---------+--------+--------+\n",
+      "|DAY_OF_WEEK_DOUBLE|DAY_OF_WEEK|LATE_FLIGHT|ARR_DELAY|DEP_HOUR|DEP_TIME|\n",
+      "+------------------+-----------+-----------+---------+--------+--------+\n",
+      "|               3.0|          3|      false|      -18|    15.0|    1533|\n",
+      "|               5.0|          5|       true|      118|    17.0|    1732|\n",
+      "|               6.0|          6|      false|       -9|    15.0|    1537|\n",
+      "|               1.0|          1|      false|        1|    15.0|    1551|\n",
+      "|               1.0|          1|       true|      183|    20.0|    2046|\n",
+      "|               2.0|          2|       true|      134|    20.0|    2009|\n",
+      "|               3.0|          3|      false|       -3|    17.0|    1750|\n",
+      "|               5.0|          5|       true|       38|    17.0|    1751|\n",
+      "|               6.0|          6|       true|       37|    18.0|    1818|\n",
+      "|               1.0|          1|       true|      119|    18.0|    1845|\n",
+      "|               2.0|          2|       true|       80|    19.0|    1902|\n",
+      "|               3.0|          3|       true|       23|    18.0|    1813|\n",
+      "|               3.0|          3|       true|      426|     1.0|     115|\n",
+      "|               5.0|          5|      false|       -1|    17.0|    1749|\n",
+      "|               6.0|          6|       true|       24|    17.0|    1749|\n",
+      "|               1.0|          1|       true|       35|    18.0|    1812|\n",
+      "|               2.0|          2|       true|       14|    17.0|    1758|\n",
+      "|               7.0|          7|      false|      -13|    19.0|    1950|\n",
+      "|               7.0|          7|      false|       -2|    19.0|    1950|\n",
+      "|               3.0|          3|      false|       -9|    19.0|    1947|\n",
+      "+------------------+-----------+-----------+---------+--------+--------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "extendedDF.select(\"DAY_OF_WEEK_DOUBLE\", \"DAY_OF_WEEK\", \"LATE_FLIGHT\", \"ARR_DELAY\", \"DEP_HOUR\", \"DEP_TIME\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 113,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# Create the Day Of Week encoder which takes in DAY_OF_WEEK_DOUBLE and puts\n",
+    "# out the one hot encoded vector DOW_VEC\n",
+    "# e.g. if DAY_OF_WEEK_DOUBLE = 2.0 then DOW_VEC = 0 1 0 0 0 0 0\n",
+    "#      if DAY_OF_WEEK_DOUBLE = 5.0 then DOW_VEC = 0 0 0 0 1 0 0\n",
+    "DOWEncoder = OneHotEncoder(inputCol=\"DAY_OF_WEEK_DOUBLE\", outputCol=\"DOW_VEC\")\n",
+    "# Create the Hour encoder which takes in DEP_HOUR and puts out the one hot encoded vector DEP_HOUR_VEC\n",
+    "#e.g.ifDEP_HOUR=3.0 thenDEP_HOUR_VEC=001000000000000 000000000\n",
+    "# if DEP_HOUR = 21.0 then DEP_HOUR_VEC = 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 000001000\n",
+    "hourEncoder = OneHotEncoder(inputCol=\"DEP_HOUR\", outputCol=\"DEP_HOUR_VEC\")\n",
+    "# Create the Origin indexer and encoders which take in ORIGIN and put out t he one hot encoded vector ORIGIN_VEC\n",
+    "# There are 314 distinct origins so this is quite a big vector \n",
+    "originIndexer = StringIndexer(inputCol=\"ORIGIN\", outputCol=\"ORIGIN_INDEX\") \n",
+    "originEncoder = OneHotEncoder(inputCol=\"ORIGIN_INDEX\", outputCol=\"ORIGIN_VEC\")\n",
+    "# Create the Destination indexer and encoders which take in DEST and put ou t the one hot encoded vector DEST_VEC\n",
+    "# There are 314 distinct destinations so this is quite a big vector \n",
+    "destinationIndexer = StringIndexer(inputCol=\"DEST\", outputCol=\"DEST_INDEX\") \n",
+    "destinationEncoder = OneHotEncoder(inputCol=\"DEST_INDEX\", outputCol=\"DEST_VEC\")\n",
+    "# Create the Carrier indexer and encoders which take in CARRIER and put out the one hot encoded vector CARRIER_VEC\n",
+    "# There are 14 distinct destinations\n",
+    "carrierIndexer = StringIndexer(inputCol=\"CARRIER\", outputCol=\"CARRIER_INDEX\")\n",
+    "carrierEncoder = OneHotEncoder(inputCol=\"CARRIER_INDEX\", outputCol=\"CARRIER_VEC\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "hourAndDOWEncoded = hourEncoder.transform(DOWEncoder.transform(extendedDF))\n",
+    "originModel = originIndexer.fit(hourAndDOWEncoded)\n",
+    "originIndexed = originModel.transform(hourAndDOWEncoded)\n",
+    "originEncoded = originEncoder.transform(originIndexed)\n",
+    "destinationModel = destinationIndexer.fit(originEncoded)\n",
+    "destinationIndexed = destinationModel.transform(originEncoded)\n",
+    "destinationEncoded = destinationEncoder.transform(destinationIndexed)\n",
+    "carrierModel = carrierIndexer.fit(destinationEncoded)\n",
+    "carrierIndexed = carrierModel.transform(destinationEncoded)\n",
+    "completeEncodedDF = carrierEncoder.transform(carrierIndexed)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 115,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "root\n",
+      " |-- YEAR: integer (nullable = true)\n",
+      " |-- MONTH: integer (nullable = true)\n",
+      " |-- DAY_OF_MONTH: integer (nullable = true)\n",
+      " |-- DAY_OF_WEEK: integer (nullable = true)\n",
+      " |-- FL_DATE: string (nullable = true)\n",
+      " |-- CARRIER: string (nullable = true)\n",
+      " |-- ORIGIN: string (nullable = true)\n",
+      " |-- ORIGIN_CITY_NAME: string (nullable = true)\n",
+      " |-- ORIGIN_STATE_ABR: string (nullable = true)\n",
+      " |-- DEST: string (nullable = true)\n",
+      " |-- DEST_CITY_NAME: string (nullable = true)\n",
+      " |-- DEST_STATE_ABR: string (nullable = true)\n",
+      " |-- DEP_TIME: integer (nullable = true)\n",
+      " |-- DEP_DELAY: integer (nullable = true)\n",
+      " |-- ARR_TIME: integer (nullable = true)\n",
+      " |-- ARR_DELAY: integer (nullable = true)\n",
+      " |-- CANCELLED: integer (nullable = true)\n",
+      " |-- CANCELLATION_CODE: string (nullable = true)\n",
+      " |-- DIVERTED: integer (nullable = true)\n",
+      " |-- ACTUAL_ELAPSED_TIME: integer (nullable = true)\n",
+      " |-- CARRIER_DELAY: integer (nullable = true)\n",
+      " |-- WEATHER_DELAY: integer (nullable = true)\n",
+      " |-- NAS_DELAY: integer (nullable = true)\n",
+      " |-- SECURITY_DELAY: integer (nullable = true)\n",
+      " |-- LATE_AIRCRAFT_DELAY: integer (nullable = true)\n",
+      " |-- DAY_OF_WEEK_DOUBLE: double (nullable = true)\n",
+      " |-- LATE_FLIGHT: boolean (nullable = false)\n",
+      " |-- DEP_HOUR: double (nullable = true)\n",
+      " |-- DOW_VEC: vector (nullable = true)\n",
+      " |-- DEP_HOUR_VEC: vector (nullable = true)\n",
+      " |-- ORIGIN_INDEX: double (nullable = true)\n",
+      " |-- ORIGIN_VEC: vector (nullable = true)\n",
+      " |-- DEST_INDEX: double (nullable = true)\n",
+      " |-- DEST_VEC: vector (nullable = true)\n",
+      " |-- CARRIER_INDEX: double (nullable = true)\n",
+      " |-- CARRIER_VEC: vector (nullable = true)\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "completeEncodedDF.printSchema()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 116,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "+---------------+\n",
+      "|    CARRIER_VEC|\n",
+      "+---------------+\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "|(13,[10],[1.0])|\n",
+      "| (13,[2],[1.0])|\n",
+      "| (13,[2],[1.0])|\n",
+      "| (13,[2],[1.0])|\n",
+      "+---------------+\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "completeEncodedDF.select(\"CARRIER_VEC\").show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "assembler = VectorAssembler(inputCols = [\"DOW_VEC\", \"DEP_HOUR_VEC\", \"ORIGIN_VEC\", \"DEST_VEC\", \"CARRIER_VEC\"], outputCol=\"features\")\n",
+    "outputDF = assembler.transform(completeEncodedDF)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 118,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from pyspark.mllib.regression import LabeledPoint"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 120,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "trainingLP = outputDF.map(lambda line: LabeledPoint(line.LATE_FLIGHT, line.features))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 121,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[LabeledPoint(0.0, (670,[3,22,44,381,667],[1.0,1.0,1.0,1.0,1.0])),\n",
+       " LabeledPoint(1.0, (670,[5,24,44,381,667],[1.0,1.0,1.0,1.0,1.0])),\n",
+       " LabeledPoint(0.0, (670,[6,22,44,381,667],[1.0,1.0,1.0,1.0,1.0])),\n",
+       " LabeledPoint(0.0, (670,[1,22,44,381,667],[1.0,1.0,1.0,1.0,1.0])),\n",
+       " LabeledPoint(1.0, (670,[1,27,69,345,667],[1.0,1.0,1.0,1.0,1.0]))]"
+      ]
+     },
+     "execution_count": 121,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "trainingLP.take(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 124,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from pyspark.mllib.classification import LogisticRegressionWithLBFGS"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 125,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "model = LogisticRegressionWithLBFGS.train(trainingLP)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 132,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[(0.0, 0), (1.0, 0), (0.0, 0), (0.0, 0)]"
+      ]
+     },
+     "execution_count": 132,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "labelsAndPredictions = trainingLP.map(lambda line: (line.label, model.predict(line.features)))\n",
+    "labelsAndPredictions.take(4)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 133,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy on training set : 0.745908894354\n"
+     ]
+    }
+   ],
+   "source": [
+    "trainAccuracy = (labelsAndPredictions.filter(lambda(label, prediction): label == prediction).count()) / float(numTrainingPoints)\n",
+    "\n",
+    "print(\"Accuracy on training set : \" + str(trainAccuracy))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 136,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Accuracy of random guesses : 0.501276992514\n"
+     ]
+    }
+   ],
+   "source": [
+    "from random import randint\n",
+    "guesses = [randint(0,1) for x in range(0, numTrainingPoints)]\n",
+    "labels = labelsAndPredictions.map(lambda (label, prediction) : label).collect()\n",
+    "labelsAndGuesses = zip(labels, guesses)\n",
+    "guessAccuracy = len(filter(lambda (label, guess) : label == guess, labelsAndGuesses)) / float(numTrainingPoints)\n",
+    "print(\"Accuracy of random guesses : \" + str(guessAccuracy))"
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "metadata": {},
+   "source": [
+    "parsedRDD"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
